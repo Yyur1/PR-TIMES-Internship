@@ -60,8 +60,6 @@ module Isuconp
 
         if user && calculate_passhash(user[:account_name], password) == user[:passhash]
           return user
-        elsif user
-          return nil
         else
           return nil
         end
