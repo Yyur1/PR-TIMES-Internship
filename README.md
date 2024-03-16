@@ -26,3 +26,40 @@ root@ubuntu-virtual-machine:/home/ubuntu/Documents/Code/Ruby/private-isu/benchma
 {"pass":true,"score":282,"success":369,"fail":8,"messages":["リクエストがタイムアウトしました (GET /favicon.ico)","リクエストがタイムアウトしました (GET /posts)","リクエストがタイムアウトしました (POST /login)"]}
 
 ```
+
+コードの変更について、初めてrubyを使って不慣れなので、`try_login`の関数を以下の通りに変えました。
+元のコード：
+```
+def try_login(account_name, password)
+    user = db.prepare('SELECT * FROM users WHERE account_name = ? AND del_flg = 0').execute(account_name).first
+
+    if user & & calculate_passhash(user[:account_name], password) == user[:passhash]
+        return user
+    else
+        return nil
+    end
+end
+```
+変えたコード：
+```
+def try_login(account_name, password)
+    user = db.prepare('SELECT * FROM users WHERE account_name = ? AND del_flg = 0').execute(account_name).first
+
+    if user & & calculate_passhash(user[:account_name], password) == user[:passhash]
+        return user
+    end
+end
+```
+
+ご覧の通り、効率的には上げる効果が少なそうです。
+この変更を通じて、スコアは105になりましたが、好奇心により、前回のようにもう一回やり直してみたら、416になりました。なぜスコアは変わっているのか、それに関して非常に興味があり、まだ残る時間に研究していこうと思います。
+以下はターミナルの記録です
+```
+root@ubuntu-virtual-machine:/home/ubuntu/Documents/Code/Ruby/private-isu/benchmarker# docker run --network host --add-host host.docker.internal:host-gateway -i private-isu-benchmarker /opt/go/bin/benchmarker -t http://host.docker.internal -u /opt/go/userdata
+{"pass":true,"score":105,"success":340,"fail":15,"messages":["リクエストがタイムアウトしました (GET /@christi)","リクエストがタイムアウトしました (GET /@lilia)","リクエストがタイムアウトしました (GET /favicon.ico)","リクエストがタイムアウトしました (GET /js/timeago.min.js)","リクエストがタイムアウトしました (POST /login)","リクエストがタイムアウトしました (POST /register)"]}
+root@ubuntu-virtual-machine:/home/ubuntu/Documents/Code/Ruby/private-isu/benchmarker# docker run --network host --add-host host.docker.internal:host-gateway -i private-isu-benchmarker /opt/go/bin/benchmarker -t http://host.docker.internal -u /opt/go/userdata
+{"pass":true,"score":416,"success":416,"fail":4,"messages":["リクエストがタイムアウトしました (POST /login)"]}
+
+```
+
+
